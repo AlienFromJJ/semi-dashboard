@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>반도체 사이클 대시보드 — 국내외 반도체 종목·메모리 가격·경기 지표</title>
+<meta name="description" content="국내외 주요 반도체 종목, 메모리 현물가, 괴리율, 상대강도, 반도체 경기 온도계를 한곳에서 확인하세요.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/vendor/uPlot.min.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>반도체 사이클 대시보드</span>
+    </a>
+    <nav class="nav" aria-label="섹션">
+      <a href="#thermo">경기 온도계</a><a href="#chart">차트</a><a href="#spreads">괴리율</a><a href="#stocks">종목</a><a href="#memory">메모리 가격</a><a href="#signals">신호</a><a href="#guide">지표 해설</a>
+    </nav>
+    <div class="updated" id="updated">불러오는 중…</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="thermo" class="hero">
+    <div class="card gauge-card">
+      <div class="eyebrow">반도체 경기 온도계</div>
+      <div class="gauge" id="gauge"></div>
+      <p class="muted small" id="thermo-note"></p>
+    </div>
+    <div class="card comps-card">
+      <div class="card-head"><h2>구성 지표</h2><span class="muted small">각 0–100점, 평균이 온도</span></div>
+      <div id="comps"></div>
+    </div>
+  </section>
+
+  <section class="tiles" id="tiles" aria-label="주요 지수와 거시지표"></section>
+
+  <section id="chart" class="card chart-card">
+    <div class="chart-top">
+      <div>
+        <label class="sr" for="sel">차트 종목</label>
+        <select id="sel"></select>
+        <div class="chart-title"><span id="c-name"></span> <span class="muted" id="c-sub"></span></div>
+      </div>
+      <div class="seg" id="periods" role="tablist" aria-label="기간"></div>
+    </div>
+    <div class="stats" id="c-stats"></div>
+    <div class="toggles" id="ma-toggles"></div>
+    <div id="plot" class="plot"></div>
+    <p class="muted small" id="c-foot"></p>
+  </section>
+
+  <section id="spreads">
+    <div class="sec-head"><h2>괴리율 · 상대강도</h2><p class="muted">1년 평균에서 얼마나 벗어났는지(σ)를 보면 상대적인 저평가·고평가 구간을 가늠할 수 있습니다. 카드를 누르면 위 차트에 표시됩니다.</p></div>
+    <div class="grid3" id="spread-cards"></div>
+  </section>
+
+  <section id="stocks">
+    <div class="sec-head row">
+      <div><h2>주요 반도체 종목</h2><p class="muted">열 제목을 눌러 정렬하고, 행을 누르면 차트로 이동합니다.</p></div>
+      <div class="seg" id="groups" role="tablist" aria-label="시장"></div>
+    </div>
+    <div class="table-wrap"><table class="tbl" id="tbl"></table></div>
+  </section>
+
+  <section id="memory">
+    <div class="sec-head"><h2>메모리 반도체 가격</h2><p class="muted" id="mem-note"></p></div>
+    <div class="grid2" id="mem-groups"></div>
+  </section>
+
+  <section id="macro-sec">
+    <div class="sec-head"><h2>실물 경기 지표</h2><p class="muted">미국 연준(FRED) 월간 지표. 주가보다 늦게 움직이는 후행 확인용입니다.</p></div>
+    <div class="grid3" id="macro"></div>
+  </section>
+
+  <section id="signals">
+    <div class="sec-head"><h2>오늘의 신호</h2><p class="muted">과매수·과매도, 추세 전환, 신고가 등 규칙 기반으로 자동 탐지한 항목입니다.</p></div>
+    <div class="signals" id="sig"></div>
+  </section>
+
+  <section id="guide" class="card guide">
+    <h2>지표 해설</h2>
+    <div class="guide-grid">
+      <div><h3>이격도</h3><p>현재가 ÷ 이동평균 × 100. 100보다 높으면 평균 위, 20일 이격도 115 이상은 단기 과열, 88 이하는 단기 급락 구간으로 봅니다.</p></div>
+      <div><h3>RSI (14일)</h3><p>최근 상승폭과 하락폭의 비율. 70 이상은 과매수, 30 이하는 과매도로 해석합니다.</p></div>
+      <div><h3>골든·데드크로스</h3><p>50일 이동평균이 200일 이동평균을 위로(골든) 또는 아래로(데드) 뚫는 시점. 중기 추세 전환 신호입니다.</p></div>
+      <div><h3>SOX ÷ 나스닥</h3><p>반도체가 기술주 전반보다 강한지 보여 줍니다. 상승 추세면 반도체 주도장, 하락하면 주도권 이탈을 의미합니다.</p></div>
+      <div><h3>메모리 3사 바스켓</h3><p>삼성전자·SK하이닉스·마이크론 동일가중 지수. 메모리 주가는 D램 가격보다 약 2–3분기 먼저 움직이는 경향이 있습니다.</p></div>
+      <div><h3>경기 온도계</h3><p>추세·모멘텀·상대강도·시장 폭·메모리 사이클·D램 현물가·위험선호·실물 생산을 0–100으로 환산해 평균합니다. 80↑ 과열, 62↑ 활황, 45↑ 중립, 30↑ 둔화, 그 아래 침체.</p></div>
+    </div>
+  </section>
+
+  <footer class="foot muted small">
+    <p>데이터: 네이버 금융(국내 종목), Yahoo Finance(해외 종목·지수·환율·원자재), DRAMeXchange(메모리 현물가), FRED(실물 지표). 해외 시세는 지연될 수 있으며, 데이터는 자동으로 주기적으로 갱신됩니다.</p>
+    <p>ⓘ 본 페이지는 정보 제공 목적이며 투자 권유가 아닙니다. 투자 판단과 손익의 책임은 투자자 본인에게 있습니다.</p>
+  </footer>
+</main>
+<script src="assets/vendor/uPlot.iife.min.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
