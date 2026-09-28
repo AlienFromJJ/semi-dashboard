@@ -1,25 +1,25 @@
 name: 데이터 자동 업데이트 & 배포
-
+​
 on:
   schedule:
-    # 평일 30분마다 (UTC 기준 — 한국장·미국장 모두 포함)
-    - cron: "*/30 * * * 1-5"
+    # 평일 GitHub Actions 최소 주기인 5분마다
+    - cron: "*/5 * * * 1-5"
     # 주말 하루 2회 (메모리 가격·거시지표 반영)
     - cron: "0 0,12 * * 0,6"
   workflow_dispatch: {}
   push:
     branches: [main]
     paths-ignore: ["data/**"]
-
+​
 permissions:
   contents: write
   pages: write
   id-token: write
-
+​
 concurrency:
   group: update
   cancel-in-progress: false
-
+​
 jobs:
   update:
     runs-on: ubuntu-latest
