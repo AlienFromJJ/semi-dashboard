@@ -7,7 +7,7 @@ const MA_COL = { 20: "#EAC26B", 60: "#72BC8F", 120: "#BF8EDA", 200: "#DE9255" };
 const TILE_IDS = ["SOX", "NDX", "KOSPI", "KOSDAQ", "USDKRW", "US10Y", "VIX", "COPPER"];
 const bust = () => "?t=" + Math.floor(Date.now() / 300000);
 const getJSON = async (u, fallback) => { try { const r = await fetch(u + bust()); if (!r.ok) throw 0; return await r.json(); } catch { return fallback; } };
-
+​
 // ---------- formatting
 const nf = (v, d) => v == null || isNaN(v) ? "–" : v.toLocaleString("ko-KR", { minimumFractionDigits: d, maximumFractionDigits: d });
 const dec = cur => cur === "KRW" || cur === "JPY" ? 0 : cur === "%" ? 3 : 2;
@@ -16,7 +16,7 @@ const pct = (v, d = 1) => v == null ? "–" : (v > 0 ? "+" : "") + nf(v, d) + "%
 const cls = v => v == null ? "" : v > 0 ? "up" : v < 0 ? "down" : "";
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const scoreColor = s => s >= 80 ? css("--red") : s >= 62 ? css("--orange") : s >= 45 ? css("--blue") : s >= 30 ? "#7D7A75" : "#5B6B8C";
-
+​
 function spark(arr, w = 72, h = 28, color) {
   const a = (arr || []).filter(v => v != null);
   if (a.length < 2) return `<svg width="${w}" height="${h}"></svg>`;
@@ -25,7 +25,7 @@ function spark(arr, w = 72, h = 28, color) {
   const c = color || (a[a.length - 1] >= a[0] ? css("--up") : css("--down"));
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 }
-
+​
 // ---------- header
 function renderUpdated() {
   const u = new Date(S.summary.updated), el = $("#updated");
@@ -34,7 +34,7 @@ function renderUpdated() {
   el.innerHTML = `${rel} 업데이트<span class="abs"> · ${u.toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })} KST</span>`;
   el.classList.toggle("stale", mins > 60 * 26);
 }
-
+​
 // ---------- thermometer
 function renderThermo() {
   const t = S.summary.thermo, sc = t.score ?? 0;
@@ -56,7 +56,7 @@ function renderThermo() {
     <div><div class="bar"><i style="width:${c.score}%;background:${scoreColor(c.score)}"></i></div><div class="comp-v">${esc(c.value)}<span class="cd"> · ${esc(c.desc)}</span></div></div>
     <div class="comp-s num">${c.score}</div></div>`).join("");
 }
-
+​
 // ---------- tiles
 function renderTiles() {
   const M = byId();
@@ -64,7 +64,7 @@ function renderTiles() {
     return `<button class="tile" data-id="${id}"><span class="t-n">${esc(m.name)}</span><span class="t-v num">${fmtPrice(m.last, m.cur === "PT" ? "" : m.cur)}</span><span class="t-c num ${cls(m.chg1d)}">${pct(m.chg1d, 2)} <span class="muted">· 1M ${pct(m.r1m)}</span></span>${spark(m.spark.slice(-44))}</button>`; }).join("");
   $("#tiles").onclick = e => { const b = e.target.closest("[data-id]"); if (b) select(b.dataset.id, true); };
 }
-
+​
 // ---------- chart
 const byId = () => Object.fromEntries(S.summary.series.map(m => [m.id, m]));
 function info(id) {
@@ -73,7 +73,7 @@ function info(id) {
 }
 async function load(file) { return S.cache[file] ??= await getJSON(`data/prices/${file}.json`, { d: [], c: [] }); }
 const maArr = (c, n) => { const o = new Array(c.length).fill(null); let s = 0; for (let i = 0; i < c.length; i++) { s += c[i]; if (i >= n) s -= c[i - n]; if (i >= n - 1) o[i] = s / n; } return o; };
-
+​
 function buildSelect() {
   const G = { INDEX: "지수", KR: "국내 종목", GLOBAL: "해외 종목", MACRO: "매크로" };
   let h = Object.entries(G).map(([g, l]) => `<optgroup label="${l}">${S.summary.series.filter(m => m.group === g).map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join("")}</optgroup>`).join("");
@@ -83,7 +83,7 @@ function buildSelect() {
   $("#periods").onclick = e => { const b = e.target.closest("[data-p]"); if (b) { S.period = b.dataset.p; drawChart(); } };
 }
 function select(id, scroll) { S.cur = id; $("#sel").value = id; drawChart(); if (scroll) $("#chart").scrollIntoView(); history.replaceState(null, "", "#" + encodeURIComponent(id)); }
-
+​
 async function drawChart() {
   const it = info(S.cur); if (!it) return;
   const raw = await load(it.file);
@@ -101,7 +101,7 @@ async function drawChart() {
     it.kind === "price" ? ["이격도 20 · RSI", `${nf(it.disp20, 1)} · ${nf(it.rsi, 0)}`, `60일 ${nf(it.disp60, 1)} · 120일 ${nf(it.disp120, 1)}`] : ["1년 평균 대비", `${it.z > 0 ? "+" : ""}${nf(it.z, 2)}σ`, `1년 평균 ${f(it.mean1y)}`]];
   $("#c-stats").innerHTML = stats.map(([k, v, s]) => `<div class="stat"><div class="k">${k}</div><div class="v num">${v}</div><div class="s num">${s}</div></div>`).join("");
   $("#c-foot").textContent = `${d.length}거래일 · ${d[0]} → ${d[d.length - 1]}` + (it.kind === "price" ? ` · 일봉 종가 기준 · 출처 ${it.src}` : "");
-
+​
   const xs = d.map(s => Date.parse(s + "T00:00:00Z") / 1000);
   const main = css("--blue"), grid = css("--bd"), tx2 = css("--tx2");
   const series = [{}, { label: it.name, stroke: main, width: 2, fill: main + "14", value: (u, v) => v == null ? "–" : f(v) }];
@@ -111,7 +111,7 @@ async function drawChart() {
   if (it.kind === "derived") { series.push({ label: "기간 평균", stroke: tx2, width: 1, dash: [4, 4], value: () => f(avg) }); data.push(c.map(() => avg)); }
   $("#ma-toggles").innerHTML = tog.map(p => `<button class="chip" data-ma="${p}" aria-pressed="${S.ma[p]}"><i style="background:${MA_COL[p]}"></i>${p}일 이동평균</button>`).join("");
   $("#ma-toggles").onclick = e => { const b = e.target.closest("[data-ma]"); if (b) { S.ma[b.dataset.ma] = !S.ma[b.dataset.ma]; drawChart(); } };
-
+​
   const el = $("#plot"); S.plot?.destroy(); el.innerHTML = "";
   const w = el.clientWidth, h = w < 600 ? 280 : 340;
   const axis = { stroke: tx2, grid: { stroke: grid, width: 1 }, ticks: { stroke: grid, width: 1 }, font: "12px system-ui" };
@@ -121,7 +121,7 @@ async function drawChart() {
       { ...axis, size: 64, values: (u, v) => v.map(x => x >= 100000 ? nf(x / 1000, 0) + "k" : nf(x, x < 10 ? 2 : 0)) }] }, data, el);
 }
 window.addEventListener("resize", () => { clearTimeout(S.rt); S.rt = setTimeout(drawChart, 150); });
-
+​
 // ---------- spreads
 function renderSpreads() {
   $("#spread-cards").innerHTML = Object.entries(S.summary.derived).map(([k, d]) => {
@@ -133,7 +133,7 @@ function renderSpreads() {
       <div class="zbar"><b style="left:${pos}%"></b></div><div class="zl"><span>−3σ</span><span>평균 대비 ${d.z > 0 ? "+" : ""}${nf(d.z, 2)}σ</span><span>+3σ</span></div></button>`; }).join("");
   $("#spread-cards").onclick = e => { const b = e.target.closest("[data-id]"); if (b) select(b.dataset.id, true); };
 }
-
+​
 // ---------- table
 const COLS = [["name", "종목"], ["last", "현재가"], ["chg1d", "1일"], ["r1m", "1개월"], ["r3m", "3개월"], ["ytd", "연초 대비"], ["r1y", "1년"], ["dd52", "52주 고점 대비"], ["disp20", "이격도 20"], ["disp60", "이격도 60"], ["rsi", "RSI"], ["above200", "장기 추세"], ["spark", "3개월 추이"]];
 function renderTable() {
@@ -155,7 +155,7 @@ function renderTable() {
   $("#tbl thead").onkeydown = e => { if (e.key === "Enter") sortBy(e.target.dataset.k); };
   $("#tbl tbody").onclick = e => { const r = e.target.closest("tr"); if (r) select(r.dataset.id, true); };
 }
-
+​
 // ---------- memory
 function renderMemory() {
   const mem = S.memory, items = Object.entries(mem?.items || {});
@@ -168,14 +168,14 @@ function renderMemory() {
     ${items.filter(([, v]) => v.cat === cat).map(([n, v]) => `<tr><td>${esc(n)}</td><td class="num">$${nf(v.avg, 3)}</td><td class="num muted hl">${nf(v.high, 2)} / ${nf(v.low, 2)}</td><td class="num ${cls(v.chg)}">${pct(v.chg, 2)}</td><td>${v.hist.length > 1 ? spark(v.hist.map(h => h[1]), 60, 22) : '<span class="muted small">누적 중</span>'}</td></tr>`).join("")}
   </tbody></table><div class="muted small" style="margin-top:8px">${[...new Set(items.filter(([, v]) => v.cat === cat).map(([, v]) => v.freq === "weekly" ? "주간" : "일간"))].join("·")} 세션 기준 · 변동은 직전 세션 대비</div></div>`).join("");
 }
-
+​
 // ---------- macro
 function renderMacro() {
   const e = Object.entries(S.macro || {});
   if (!e.length) { $("#macro").innerHTML = `<div class="empty">FRED 지표는 다음 자동 업데이트에서 채워집니다. (미국 반도체 산업생산, 반도체 PPI, 전자제품 신규주문)</div>`; return; }
   $("#macro").innerHTML = e.map(([k, m]) => `<div class="mac"><div class="muted small">${esc(m.title)}</div><div class="v num">${m.lastYoy == null ? nf(m.last, 1) : pct(m.lastYoy)}</div><div class="muted small">전년 대비 · ${m.date.slice(0, 7)} · ${esc(k)}</div><div style="margin-top:10px">${spark(m.yoy.slice(-36), 240, 44, css("--blue"))}</div></div>`).join("");
 }
-
+​
 // ---------- signals
 function renderSignals() {
   const L = { hot: "p-orange", cold: "p-blue", up: "p-green", down: "p-red", info: "p-gray" };
@@ -183,7 +183,7 @@ function renderSignals() {
   $("#sig").innerHTML = s.length ? s.map(x => `<button class="sig" data-id="${esc(x.id)}"><span class="pill ${L[x.lvl] || "p-gray"}">${esc(x.tag)}</span><span>${esc(x.text)}</span></button>`).join("") : `<div class="empty">오늘 탐지된 신호가 없습니다.</div>`;
   $("#sig").onclick = e => { const b = e.target.closest("[data-id]"); if (b && info(b.dataset.id)) select(b.dataset.id, true); };
 }
-
+​
 async function init() {
   [S.summary, S.memory, S.macro] = await Promise.all([getJSON("data/summary.json"), getJSON("data/memory.json", {}), getJSON("data/macro.json", {})]);
   if (!S.summary) { $("#updated").textContent = "데이터를 불러오지 못했습니다"; return; }
@@ -192,5 +192,6 @@ async function init() {
   renderSpreads(); renderTable(); renderMemory(); renderMacro(); renderSignals();
 }
 init();
-setInterval(async () => { const s = await getJSON("data/summary.json"); if (s && s.updated !== S.summary?.updated) { S.cache = {}; init(); } else if (S.summary) renderUpdated(); }, 5 * 60 * 1000);
+setInterval(async () => { const s = await getJSON("data/summary.json"); if (s && s.updated !== S.summary?.updated) { S.cache = {}; init(); } else if (S.summary) renderUpdated(); }, 60 * 1000);
 })();
+​
