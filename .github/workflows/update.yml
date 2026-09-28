@@ -1,6 +1,5 @@
 name: 데이터 자동 업데이트 & 배포
-​
-on:
+​on:
   schedule:
     # 평일 GitHub Actions 최소 주기인 5분마다
     - cron: "*/5 * * * 1-5"
